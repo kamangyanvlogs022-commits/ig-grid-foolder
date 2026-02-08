@@ -21,8 +21,9 @@ exports.handler = async () => {
         title:
           page.properties.Name?.title?.[0]?.plain_text || "",
 
+        // ✅ READ IMAGE LINK AS TEXT
         url:
-          page.properties.Link?.url || "",
+          page.properties.Link?.rich_text?.[0]?.plain_text || "",
 
         date:
           page.properties["Publish Date"]?.date?.start || "",
@@ -41,22 +42,6 @@ exports.handler = async () => {
     return {
       statusCode: 500,
       body: JSON.stringify({ error: error.message }),
-    };
-  }
-};
-    return {
-      statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(items),
-    };
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        error: error.message,
-      }),
     };
   }
 };
