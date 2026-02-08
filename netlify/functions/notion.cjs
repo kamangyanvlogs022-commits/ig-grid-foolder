@@ -11,22 +11,29 @@ exports.handler = async () => {
       sorts: [
         {
           property: "Publish Date",
-          direction: "ascending",
+          direction: "descending",
         },
       ],
     });
 
     const data = response.results.map(page => {
+      const files = page.properties.Media?.files || [];
+
+      const file = files[0];
+      let url = "";
+
+      if (file) {
+        if (file.type === "file") {
+          url = file.file.url;
+        } else if (file.type === "external") {
+          url = file.external.url;
+        }
+      }
+
       return {
-        title:
-          page.properties.Name?.title?.[0]?.plain_text || "",
-
-        // ✅ READ IMAGE LINK AS TEXT
-        url:
-          page.properties.Link?.rich_text?.[0]?.plain_text || "",
-
-        date:
-          page.properties["Publish Date"]?.date?.start || "",
+        title: page.properties.Name?.title?.[0]?.plain_text || "",
+        url,
+        date: page.properties["Publish Date"]?.date?.start || "",
       };
     });
 
@@ -37,7 +44,6 @@ exports.handler = async () => {
       },
       body: JSON.stringify(data),
     };
-
   } catch (error) {
     return {
       statusCode: 500,
