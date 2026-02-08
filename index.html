@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>IG Grid Preview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .refresh {
+      margin: 15px;
+      padding: 8px 14px;
+      background: #111;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-block;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      max-width: 360px;
+      margin: 10px auto;
+    }
+
+    .item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      aspect-ratio: 4 / 5;
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="refresh" onclick="loadData()">Refresh</div>
+
+  <div class="grid" id="grid"></div>
+
+  <script>
+    async function loadData() {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+
+      try {
+        const res = await fetch("/.netlify/functions/notion");
+        const data = await res.json();
+
+        data.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "item";
+
+          const img = document.createElement("img");
+          img.src = item.url;
+
+          div.appendChild(img);
+          grid.appendChild(div);
+        });
+      } catch (err) {
+        grid.innerHTML = "ERROR LOADING DATA";
+        console.error(err);
+      }
+    }
+
+    loadData();
+  </script>
+
+</body>
+</html>
