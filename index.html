@@ -156,24 +156,29 @@ async function loadData() {
       return;
     }
 
-    data.slice(0,12).forEach(item => {
-      if (!item.url) return;
+    data
+      .filter(item => item.url && item.url.startsWith("http"))
+      .slice(0, 12)
+      .forEach(item => {
 
-      const div = document.createElement("div");
-      div.className = "item";
+        const div = document.createElement("div");
+        div.className = "item";
 
-      const img = document.createElement("img");
-      img.src = item.url;
-      img.onclick = () => openImage(item.url);
-      div.appendChild(img);
+        const img = document.createElement("img");
+        img.src = item.url;
+        img.onclick = () => openImage(item.url);
+        div.appendChild(img);
 
-      const overlay = document.createElement("div");
-      overlay.className = "overlay";
-      overlay.innerHTML = <div>${item.title || ""}</div><div>${item.date || ""}</div>;
-      div.appendChild(overlay);
+        const overlay = document.createElement("div");
+        overlay.className = "overlay";
+        overlay.innerHTML = `
+          <div>${item.title || ""}</div>
+          <div>${item.date || ""}</div>
+        `;
+        div.appendChild(overlay);
 
-      grid.appendChild(div);
-    });
+        grid.appendChild(div);
+      });
 
   } catch (e) {
     console.error(e);
