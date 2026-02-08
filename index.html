@@ -112,9 +112,7 @@ body { background:#fff; font-family:Arial,sans-serif; }
   color:#fff;
   font-size:18px;
   cursor:pointer;
-  transition:transform .15s ease;
 }
-.close:hover { transform:scale(1.15); }
 </style>
 </head>
 
@@ -143,18 +141,16 @@ body { background:#fff; font-family:Arial,sans-serif; }
 </div>
 
 <script>
-const API_URL = "https://socialsbyjuvs.netlify.app/.netlify/functions/notion";
-
 async function loadData() {
   const grid = document.getElementById("grid");
   grid.innerHTML = "";
 
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch("https://socialsbyjuvs.netlify.app/.netlify/functions/notion");
     const data = await res.json();
 
-    if (!Array.isArray(data) || data.length === 0) {
-      grid.innerHTML = "<p style='text-align:center'>No images yet</p>";
+    if (!Array.isArray(data)) {
+      grid.innerHTML = "<p style='text-align:center'>No data</p>";
       return;
     }
 
@@ -177,8 +173,8 @@ async function loadData() {
       grid.appendChild(div);
     });
 
-  } catch (err) {
-    console.error(err);
+  } catch (e) {
+    console.error(e);
     grid.innerHTML = "<p style='text-align:center'>Error loading</p>";
   }
 }
@@ -187,7 +183,6 @@ function openImage(src){
   document.getElementById("media").innerHTML = <img src="${src}">;
   document.getElementById("preview").className = "preview active";
 }
-
 function closePreview(){
   document.getElementById("preview").className = "preview";
   document.getElementById("media").innerHTML = "";
