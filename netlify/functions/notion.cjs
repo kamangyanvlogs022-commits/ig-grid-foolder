@@ -17,14 +17,14 @@ exports.handler = async () => {
     });
 
     const data = response.results.map(page => {
-      const files = page.properties["Image"]?.files || [];
+      const file = page.properties["Files & media"]?.files?.[0];
 
       let imageUrl = "";
-      if (files.length > 0) {
+      if (file) {
         imageUrl =
-          files[0].type === "external"
-            ? files[0].external.url
-            : files[0].file.url;
+          file.type === "external"
+            ? file.external.url
+            : file.file.url;
       }
 
       return {
@@ -36,13 +36,16 @@ exports.handler = async () => {
 
     return {
       statusCode: 200,
-      headers: { "Access-Control-Allow-Origin": "*" },
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
       body: JSON.stringify(data),
     };
-  } catch (err) {
+
+  } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
+      body: JSON.stringify({ error: error.message }),
     };
   }
 };

@@ -146,7 +146,7 @@ async function loadData() {
   grid.innerHTML = "";
 
   try {
-    const res = await fetch("/.netlify/functions/notion");
+    const res = await fetch("https://socialsbyjuvs.netlify.app/.netlify/functions/notion");
     const data = await res.json();
 
     if (!Array.isArray(data)) {
