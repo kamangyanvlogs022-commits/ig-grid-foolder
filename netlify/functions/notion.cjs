@@ -1,16 +1,197 @@
-exports.handler = async function () {
-  return {
-    statusCode: 200,
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify([
-      {
-        url: "https://i.imgur.com/4ZQZ4ZB.jpeg",
-        title: "TEST IMAGE",
-        date: "2026-02-06",
-        carousel: false
-      }
-    ])
-  };
-};
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IG Grid Widget</title>
+
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#fff; font-family:Arial,sans-serif; }
+
+/* ===== REFRESH ===== */
+.refresh-wrap {
+  width:360px;
+  margin:12px auto 6px;
+}
+.refresh-btn {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 8px;
+  background:#111;
+  color:#fff;
+  border-radius:6px;
+  font-size:12px;
+  cursor:pointer;
+  transition:transform .15s ease, opacity .15s ease;
+}
+.refresh-btn:hover { transform:scale(1.06); opacity:.9; }
+.refresh-btn:active { transform:scale(0.96); }
+
+.refresh-icon {
+  width:14px;
+  height:14px;
+  stroke:#fff;
+  stroke-width:1.4;
+  fill:none;
+}
+
+.divider {
+  height:1px;
+  background:#e5e5e5;
+  margin-top:8px;
+}
+
+/* ===== GRID ===== */
+.grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;
+  max-width:360px;
+  margin:10px auto;
+}
+
+.item {
+  position:relative;
+  aspect-ratio:4/5;
+  overflow:hidden;
+  cursor:pointer;
+}
+
+.item img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+/* ===== HOVER OVERLAY ===== */
+.overlay {
+  position:absolute;
+  left:0; right:0; bottom:0;
+  height:45%;
+  background:linear-gradient(to top,rgba(0,0,0,.65),transparent);
+  color:#fff;
+  padding:6px;
+  font-size:11px;
+  opacity:0;
+  transition:opacity .2s ease;
+}
+.item:hover .overlay { opacity:1; }
+
+/* ===== PREVIEW ===== */
+.preview {
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.55);
+  z-index:999;
+}
+.preview.active { display:flex; }
+
+.preview-box {
+  position:relative;
+  width:220px;
+  aspect-ratio:4/5;
+}
+.preview-box img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.close {
+  position:absolute;
+  top:-32px;
+  right:0;
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:18px;
+  cursor:pointer;
+  transition:transform .15s ease;
+}
+.close:hover { transform:scale(1.15); }
+</style>
+</head>
+
+<body>
+
+<div class="refresh-wrap">
+  <div class="refresh-btn" onclick="loadData()">
+    <svg viewBox="0 0 24 24" class="refresh-icon">
+      <path d="M4 12a8 8 0 0 1 13-6"/>
+      <polyline points="17 2 17 6 13 6"/>
+      <path d="M20 12a8 8 0 0 1-13 6"/>
+      <polyline points="7 22 7 18 11 18"/>
+    </svg>
+    <span>Refresh</span>
+  </div>
+  <div class="divider"></div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="preview" id="preview">
+  <div class="preview-box">
+    <button class="close" onclick="closePreview()">×</button>
+    <div id="media"></div>
+  </div>
+</div>
+
+<script>
+async function loadData() {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  try {
+    const res = await fetch("/.netlify/functions/notion");
+    const data = await res.json();
+
+    if (!Array.isArray(data)) {
+      grid.innerHTML = "<p style='text-align:center'>No data</p>";
+      return;
+    }
+
+    data.slice(0,12).forEach(item => {
+      if (!item.url) return;
+
+      const div = document.createElement("div");
+      div.className = "item";
+
+      const img = document.createElement("img");
+      img.src = item.url;
+      img.onclick = () => openImage(item.url);
+      div.appendChild(img);
+
+      const overlay = document.createElement("div");
+      overlay.className = "overlay";
+      overlay.innerHTML = <div>${item.title || ""}</div><div>${item.date || ""}</div>;
+      div.appendChild(overlay);
+
+      grid.appendChild(div);
+    });
+
+  } catch (e) {
+    console.error(e);
+    grid.innerHTML = "<p style='text-align:center'>Error loading</p>";
+  }
+}
+
+function openImage(src){
+  document.getElementById("media").innerHTML = <img src="${src}">;
+  document.getElementById("preview").className = "preview active";
+}
+function closePreview(){
+  document.getElementById("preview").className = "preview";
+  document.getElementById("media").innerHTML = "";
+}
+
+loadData();
+</script>
+
+</body>
+</html>
