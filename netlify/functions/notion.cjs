@@ -11,43 +11,38 @@ exports.handler = async () => {
       sorts: [
         {
           property: "Publish Date",
-          direction: "descending",
+          direction: "ascending",
         },
       ],
     });
 
     const data = response.results.map(page => {
-      const files = page.properties.Media?.files || [];
+      const files = page.properties["Image"]?.files || [];
 
-      const file = files[0];
-      let url = "";
-
-      if (file) {
-        if (file.type === "file") {
-          url = file.file.url;
-        } else if (file.type === "external") {
-          url = file.external.url;
-        }
+      let imageUrl = "";
+      if (files.length > 0) {
+        imageUrl =
+          files[0].type === "external"
+            ? files[0].external.url
+            : files[0].file.url;
       }
 
       return {
         title: page.properties.Name?.title?.[0]?.plain_text || "",
-        url,
+        url: imageUrl,
         date: page.properties["Publish Date"]?.date?.start || "",
       };
     });
 
     return {
       statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-      },
+      headers: { "Access-Control-Allow-Origin": "*" },
       body: JSON.stringify(data),
     };
-  } catch (error) {
+  } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
+      body: JSON.stringify({ error: err.message }),
     };
   }
 };
