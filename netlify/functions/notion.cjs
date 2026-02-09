@@ -16,11 +16,23 @@ exports.handler = async () => {
       ],
     });
 
-    const data = response.results.map(page => ({
-      title: page.properties.Name?.title?.[0]?.plain_text || "",
-      url: page.properties.image_url?.rich_text?.[0]?.plain_text || "",
-      date: page.properties["Publish Date"]?.date?.start || "",
-    }));
+    const data = response.results.map(page => {
+      const files = page.properties["Files & media"]?.files || [];
+
+      let imageUrl = "";
+      if (files.length > 0) {
+        imageUrl =
+          files[0].type === "external"
+            ? files[0].external.url
+            : files[0].file.url;
+      }
+
+      return {
+        title: page.properties.Name?.title?.[0]?.plain_text || "",
+        url: imageUrl,
+        date: page.properties["Publish Date"]?.date?.start || "",
+      };
+    });
 
     return {
       statusCode: 200,
