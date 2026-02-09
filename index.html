@@ -6,100 +6,82 @@
 <title>IG Grid Widget</title>
 
 <style>
-* { box-sizing:border-box; margin:0; padding:0; }
-body { background:#fff; font-family:Arial,sans-serif; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#fff;font-family:Arial,sans-serif}
 
 /* ===== REFRESH ===== */
-.refresh-wrap {
-  width:360px;
-  margin:12px auto 6px;
+.refresh-wrap{width:360px;margin:12px auto 6px}
+.refresh-btn{
+display:inline-flex;align-items:center;gap:6px;
+padding:6px 8px;background:#111;color:#fff;
+border-radius:6px;font-size:12px;cursor:pointer;
+transition:transform .15s ease
 }
-.refresh-btn {
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:6px 8px;
-  background:#111;
-  color:#fff;
-  border-radius:6px;
-  font-size:12px;
-  cursor:pointer;
-}
-.refresh-icon {
-  width:14px;
-  height:14px;
-  stroke:#fff;
-  stroke-width:1.4;
-  fill:none;
-}
-.divider {
-  height:1px;
-  background:#e5e5e5;
-  margin-top:8px;
-}
+.refresh-btn:hover{transform:scale(1.08)}
+.refresh-icon{width:14px;height:14px;stroke:#fff;fill:none}
+.divider{height:1px;background:#e5e5e5;margin-top:8px}
 
 /* ===== GRID ===== */
-.grid {
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:2px;
-  max-width:360px;
-  margin:10px auto;
+.grid{
+display:grid;grid-template-columns:repeat(3,1fr);
+gap:2px;max-width:360px;margin:10px auto
 }
-.item {
-  position:relative;
-  aspect-ratio:4/5;
-  overflow:hidden;
-  cursor:pointer;
-}
-.item img {
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
+.item{position:relative;aspect-ratio:4/5;overflow:hidden;cursor:pointer}
+.item img{width:100%;height:100%;object-fit:cover}
 
-/* ===== OVERLAY ===== */
-.overlay {
-  position:absolute;
-  left:0; right:0; bottom:0;
-  height:45%;
-  background:linear-gradient(to top,rgba(0,0,0,.65),transparent);
-  color:#fff;
-  padding:6px;
-  font-size:11px;
-  opacity:0;
+/* ICONS */
+.badge{
+position:absolute;top:6px;right:6px;
+background:#fff;border-radius:3px;
+padding:2px 4px;font-size:10px
 }
-.item:hover .overlay { opacity:1; }
+.badge.carousel::after{content:"⧉"}
+.badge.video::after{content:"▶";opacity:.6}
+
+/* NO CONTENT */
+.empty{
+grid-column:1/-1;
+aspect-ratio:4/5;
+background:#eee;
+display:flex;
+align-items:center;
+justify-content:center;
+color:#888;font-size:12px
+}
 
 /* ===== PREVIEW ===== */
-.preview {
-  position:fixed;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(0,0,0,.55);
+.preview{
+position:fixed;inset:0;
+display:none;align-items:center;
+justify-content:center;
+background:rgba(0,0,0,.55)
 }
-.preview.active { display:flex; }
-.preview-box {
-  position:relative;
-  width:220px;
-  aspect-ratio:4/5;
+.preview.active{display:flex}
+.preview-box{
+position:relative;width:240px;
+aspect-ratio:4/5
 }
-.preview-box img {
-  width:100%;
-  height:100%;
-  object-fit:cover;
+.preview-box img,
+.preview-box video{
+width:100%;height:100%;object-fit:cover
 }
-.close {
-  position:absolute;
-  top:-32px;
-  right:0;
-  background:none;
-  border:none;
-  color:#fff;
-  font-size:18px;
-  cursor:pointer;
+
+/* arrows */
+.nav{
+position:absolute;top:50%;
+transform:translateY(-50%);
+font-size:26px;color:#fff;
+cursor:pointer;user-select:none;
+padding:6px
+}
+.nav.left{left:-30px}
+.nav.right{right:-30px}
+.nav:hover{transform:translateY(-50%) scale(1.15)}
+
+.close{
+position:absolute;top:-34px;right:0;
+background:none;border:none;
+color:#fff;font-size:20px;cursor:pointer
 }
 </style>
 </head>
@@ -110,11 +92,9 @@ body { background:#fff; font-family:Arial,sans-serif; }
   <div class="refresh-btn" onclick="loadData()">
     <svg viewBox="0 0 24 24" class="refresh-icon">
       <path d="M4 12a8 8 0 0 1 13-6"/>
-      <polyline points="17 2 17 6 13 6"/>
       <path d="M20 12a8 8 0 0 1-13 6"/>
-      <polyline points="7 22 7 18 11 18"/>
     </svg>
-    <span>Refresh</span>
+    Refresh
   </div>
   <div class="divider"></div>
 </div>
@@ -123,56 +103,76 @@ body { background:#fff; font-family:Arial,sans-serif; }
 
 <div class="preview" id="preview">
   <div class="preview-box">
+    <span class="nav left" onclick="prev()">‹</span>
+    <span class="nav right" onclick="next()">›</span>
     <button class="close" onclick="closePreview()">×</button>
     <div id="media"></div>
   </div>
 </div>
 
 <script>
-async function loadData() {
-  const grid = document.getElementById("grid");
-  grid.innerHTML = "";
+let currentMedia=[], index=0;
 
-  try {
-    const res = await fetch("/.netlify/functions/notion");
-    const data = await res.json();
+async function loadData(){
+  const grid=document.getElementById("grid");
+  grid.innerHTML="";
 
-    data.slice(0,12).forEach(item => {
-      if (!item.url) return;
+  const res=await fetch("/.netlify/functions/notion");
+  const data=await res.json();
 
-      const div = document.createElement("div");
-      div.className = "item";
-
-      const img = document.createElement("img");
-      img.src = item.url;
-      img.onclick = () => openImage(item.url);
-
-      const overlay = document.createElement("div");
-      overlay.className = "overlay";
-      overlay.innerHTML =
-        "<div>" + (item.title || "") + "</div>" +
-        "<div>" + (item.date || "") + "</div>";
-
-      div.appendChild(img);
-      div.appendChild(overlay);
-      grid.appendChild(div);
-    });
-
-  } catch (e) {
-    console.error(e);
-    grid.innerHTML = "Error loading";
+  if(!data.length){
+    grid.innerHTML='<div class="empty">No Content</div>';
+    return;
   }
+
+  data.slice(0,12).forEach(item=>{
+    if(!item.media.length) return;
+
+    const div=document.createElement("div");
+    div.className="item";
+
+    const img=document.createElement("img");
+    img.src=item.media[0].url;
+    img.onclick=()=>open(item.media);
+    div.appendChild(img);
+
+    if(item.media.length>1){
+      const b=document.createElement("div");
+      b.className="badge carousel";
+      div.appendChild(b);
+    }
+
+    if(item.media[0].type==="video"){
+      const b=document.createElement("div");
+      b.className="badge video";
+      div.appendChild(b);
+    }
+
+    grid.appendChild(div);
+  });
 }
 
-function openImage(src){
-  document.getElementById("media").innerHTML =
-    '<img src="' + src + '">';
+function open(media){
+  currentMedia=media;
+  index=0;
+  show();
   document.getElementById("preview").classList.add("active");
 }
 
+function show(){
+  const m=currentMedia[index];
+  document.getElementById("media").innerHTML =
+    m.type==="video"
+    ? <video src="${m.url}" controls></video>
+    : <img src="${m.url}">;
+}
+
+function next(){if(index<currentMedia.length-1){index++;show()}}
+function prev(){if(index>0){index--;show()}}
+
 function closePreview(){
   document.getElementById("preview").classList.remove("active");
-  document.getElementById("media").innerHTML = "";
+  document.getElementById("media").innerHTML="";
 }
 
 loadData();
