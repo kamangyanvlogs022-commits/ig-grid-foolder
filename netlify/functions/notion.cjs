@@ -16,15 +16,11 @@ exports.handler = async () => {
       ],
     });
 
-    const data = response.results.map(page => {
-      const files = page.properties["Files & media"]?.files || [];
-
-      return {
-        title: page.properties.Name?.title?.[0]?.plain_text || "",
-        url: files.length > 0 ? files[0].file.url : "",
-        date: page.properties["Publish Date"]?.date?.start || "",
-      };
-    });
+    const data = response.results.map(page => ({
+      title: page.properties.Name?.title?.[0]?.plain_text || "",
+      url: page.properties.image_url?.rich_text?.[0]?.plain_text || "",
+      date: page.properties["Publish Date"]?.date?.start || "",
+    }));
 
     return {
       statusCode: 200,
@@ -33,7 +29,6 @@ exports.handler = async () => {
       },
       body: JSON.stringify(data),
     };
-
   } catch (error) {
     return {
       statusCode: 500,
