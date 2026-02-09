@@ -17,19 +17,11 @@ exports.handler = async () => {
     });
 
     const data = response.results.map(page => {
-      const file = page.properties["Files & media"]?.files?.[0];
-
-      let imageUrl = "";
-      if (file) {
-        imageUrl =
-          file.type === "external"
-            ? file.external.url
-            : file.file.url;
-      }
+      const files = page.properties["Files & media"]?.files || [];
 
       return {
         title: page.properties.Name?.title?.[0]?.plain_text || "",
-        url: imageUrl,
+        url: files.length > 0 ? files[0].file.url : "",
         date: page.properties["Publish Date"]?.date?.start || "",
       };
     });
