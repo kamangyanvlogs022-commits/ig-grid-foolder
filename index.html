@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IG Grid Widget</title>
 
 <style>
@@ -14,69 +14,99 @@ body{background:#fff;font-family:Arial,sans-serif}
 .refresh-btn{
 display:inline-flex;align-items:center;gap:6px;
 padding:6px 8px;background:#111;color:#fff;
-border-radius:6px;font-size:12px;cursor:pointer;
-transition:transform .15s ease
+border-radius:6px;font-size:12px;cursor:pointer
 }
-.refresh-btn:hover{transform:scale(1.08)}
-.refresh-icon{width:14px;height:14px;stroke:#fff;fill:none}
+.refresh-icon{width:14px;height:14px;stroke:#fff;stroke-width:1.4;fill:none}
 .divider{height:1px;background:#e5e5e5;margin-top:8px}
 
 /* ===== GRID ===== */
 .grid{
-display:grid;grid-template-columns:repeat(3,1fr);
-gap:2px;max-width:360px;margin:10px auto
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:2px;
+max-width:360px;
+margin:10px auto
 }
-.item{position:relative;aspect-ratio:4/5;overflow:hidden;cursor:pointer}
-.item img{width:100%;height:100%;object-fit:cover}
+.item{
+position:relative;
+aspect-ratio:4/5;
+overflow:hidden;
+cursor:pointer
+}
+.item img{
+width:100%;
+height:100%;
+object-fit:cover
+}
 
-/* ICONS */
+/* ===== ICONS ===== */
 .badge{
-position:absolute;top:6px;right:6px;
-background:#fff;border-radius:3px;
-padding:2px 4px;font-size:10px
+position:absolute;
+top:6px;
+right:6px;
+background:#fff;
+border-radius:3px;
+padding:2px 4px;
+font-size:10px;
+line-height:1
 }
-.badge.video::after{content:"▶";opacity:.6}
+.badge.carousel::after{content:"⧉"}
+.badge.video::after{content:"▶";opacity:.7}
 
-/* OVERLAY */
+/* ===== OVERLAY ===== */
 .overlay{
-position:absolute;left:0;right:0;bottom:0;
+position:absolute;
+left:0;right:0;bottom:0;
 height:45%;
 background:linear-gradient(to top,rgba(0,0,0,.65),transparent);
-color:#fff;padding:6px;font-size:11px;
+color:#fff;
+padding:6px;
+font-size:11px;
 opacity:0
 }
 .item:hover .overlay{opacity:1}
 
-/* NO CONTENT */
+/* ===== EMPTY ===== */
 .empty{
 grid-column:1/-1;
 aspect-ratio:4/5;
 display:flex;
 align-items:center;
 justify-content:center;
-color:#888;font-size:12px
+background:#eee;
+color:#888;
+font-size:12px
 }
 
 /* ===== PREVIEW ===== */
 .preview{
-position:fixed;inset:0;
-display:none;align-items:center;
+position:fixed;
+inset:0;
+display:none;
+align-items:center;
 justify-content:center;
 background:rgba(0,0,0,.55)
 }
 .preview.active{display:flex}
 .preview-box{
-position:relative;width:240px;
+position:relative;
+width:220px;
 aspect-ratio:4/5
 }
-.preview-box img,
-.preview-box video{
-width:100%;height:100%;object-fit:cover
+.preview-box img{
+width:100%;
+height:100%;
+object-fit:cover
 }
 .close{
-position:absolute;top:-34px;right:0;
-background:none;border:none;
-color:#fff;font-size:20px;cursor:pointer
+position:absolute;
+top:-32px;
+right:0;
+background:none;
+border:none;
+color:#fff;
+font-size:18px;
+cursor:pointer
 }
 </style>
 </head>
@@ -87,7 +117,9 @@ color:#fff;font-size:20px;cursor:pointer
   <div class="refresh-btn" onclick="loadData()">
     <svg viewBox="0 0 24 24" class="refresh-icon">
       <path d="M4 12a8 8 0 0 1 13-6"/>
+      <polyline points="17 2 17 6 13 6"/>
       <path d="M20 12a8 8 0 0 1-13 6"/>
+      <polyline points="7 22 7 18 11 18"/>
     </svg>
     Refresh
   </div>
@@ -112,7 +144,7 @@ async function loadData(){
     const res=await fetch("/.netlify/functions/notion");
     const data=await res.json();
 
-    if(!data.length){
+    if(!data || !data.length){
       grid.innerHTML='<div class="empty">No Content</div>';
       return;
     }
@@ -123,13 +155,18 @@ async function loadData(){
       const div=document.createElement("div");
       div.className="item";
 
-      const isVideo=item.url.endsWith(".mp4");
-
       const img=document.createElement("img");
       img.src=item.url;
-      img.onclick=()=>openMedia(item.url,isVideo);
+      img.onclick=()=>openImage(item.url);
+      div.appendChild(img);
 
-      if(isVideo){
+      if(item.title?.includes("(2)") || item.title?.includes("(3)")){
+        const b=document.createElement("div");
+        b.className="badge carousel";
+        div.appendChild(b);
+      }
+
+      if(item.title?.toLowerCase().includes("video")){
         const b=document.createElement("div");
         b.className="badge video";
         div.appendChild(b);
@@ -137,11 +174,8 @@ async function loadData(){
 
       const overlay=document.createElement("div");
       overlay.className="overlay";
-      overlay.innerHTML=
-        `<div>${item.title||""}</div>
-         <div>${item.date||""}</div>`;
+      overlay.innerHTML=`<div>${item.title||""}</div><div>${item.date||""}</div>`;
 
-      div.appendChild(img);
       div.appendChild(overlay);
       grid.appendChild(div);
     });
@@ -152,11 +186,8 @@ async function loadData(){
   }
 }
 
-function openMedia(src,isVideo){
-  document.getElementById("media").innerHTML =
-    isVideo
-    ? <video src="${src}" controls autoplay></video>
-    : <img src="${src}">;
+function openImage(src){
+  document.getElementById("media").innerHTML=`<img src="${src}">`;
   document.getElementById("preview").classList.add("active");
 }
 
