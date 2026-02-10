@@ -9,104 +9,124 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#fff;font-family:Arial,sans-serif}
 
-/* ===== REFRESH ===== */
-.refresh-wrap{width:360px;margin:12px auto 6px}
-.refresh-btn{
-display:inline-flex;align-items:center;gap:6px;
-padding:6px 8px;background:#111;color:#fff;
-border-radius:6px;font-size:12px;cursor:pointer
+/* ===== REFRESH (IBINALIK SA FAVORITE MO) ===== */
+.refresh-wrap{
+  width:360px;
+  margin:12px auto 6px;
 }
-.refresh-icon{width:14px;height:14px;stroke:#fff;stroke-width:1.4;fill:none}
-.divider{height:1px;background:#e5e5e5;margin-top:8px}
+.refresh-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 8px;
+  background:#111;
+  color:#fff;
+  border-radius:6px;
+  font-size:12px;
+  cursor:pointer;
+}
+.refresh-icon{
+  width:14px;
+  height:14px;
+  stroke:#fff;
+  stroke-width:1.4;
+  fill:none;
+}
+.divider{
+  height:1px;
+  background:#e5e5e5;
+  margin-top:8px;
+}
 
 /* ===== GRID ===== */
 .grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:2px;
-max-width:360px;
-margin:10px auto
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;
+  max-width:360px;
+  margin:10px auto;
 }
 .item{
-position:relative;
-aspect-ratio:4/5;
-overflow:hidden;
-cursor:pointer
+  position:relative;
+  aspect-ratio:4/5;
+  overflow:hidden;
+  cursor:pointer;
 }
 .item img{
-width:100%;
-height:100%;
-object-fit:cover
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 
 /* ===== ICONS ===== */
 .badge{
-position:absolute;
-top:6px;
-right:6px;
-background:#fff;
-border-radius:3px;
-padding:2px 4px;
-font-size:10px;
-line-height:1
+  position:absolute;
+  top:6px;
+  right:6px;
+  background:#fff;
+  border-radius:6px;
+  padding:3px 5px;
+  font-size:11px;
+  line-height:1;
+  box-shadow:0 1px 3px rgba(0,0,0,.25);
 }
 .badge.carousel::after{content:"⧉"}
 .badge.video::after{content:"▶";opacity:.7}
 
 /* ===== OVERLAY ===== */
 .overlay{
-position:absolute;
-left:0;right:0;bottom:0;
-height:45%;
-background:linear-gradient(to top,rgba(0,0,0,.65),transparent);
-color:#fff;
-padding:6px;
-font-size:11px;
-opacity:0
+  position:absolute;
+  left:0;right:0;bottom:0;
+  height:45%;
+  background:linear-gradient(to top,rgba(0,0,0,.65),transparent);
+  color:#fff;
+  padding:6px;
+  font-size:11px;
+  opacity:0;
 }
 .item:hover .overlay{opacity:1}
 
-/* ===== EMPTY ===== */
+/* ===== EMPTY / LOADING ===== */
 .empty{
-grid-column:1/-1;
-aspect-ratio:4/5;
-display:flex;
-align-items:center;
-justify-content:center;
-background:#eee;
-color:#888;
-font-size:12px
+  grid-column:1/-1;
+  aspect-ratio:4/5;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#eee;
+  color:#888;
+  font-size:12px;
 }
 
 /* ===== PREVIEW ===== */
 .preview{
-position:fixed;
-inset:0;
-display:none;
-align-items:center;
-justify-content:center;
-background:rgba(0,0,0,.55)
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.55);
 }
 .preview.active{display:flex}
 .preview-box{
-position:relative;
-width:220px;
-aspect-ratio:4/5
+  position:relative;
+  width:220px;
+  aspect-ratio:4/5;
 }
 .preview-box img{
-width:100%;
-height:100%;
-object-fit:cover
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 .close{
-position:absolute;
-top:-32px;
-right:0;
-background:none;
-border:none;
-color:#fff;
-font-size:18px;
-cursor:pointer
+  position:absolute;
+  top:-32px;
+  right:0;
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:18px;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -114,7 +134,7 @@ cursor:pointer
 <body>
 
 <div class="refresh-wrap">
-  <div class="refresh-btn" onclick="loadData()">
+  <div class="refresh-btn" onclick="loadData(true)">
     <svg viewBox="0 0 24 24" class="refresh-icon">
       <path d="M4 12a8 8 0 0 1 13-6"/>
       <polyline points="17 2 17 6 13 6"/>
@@ -136,13 +156,18 @@ cursor:pointer
 </div>
 
 <script>
-async function loadData(){
+async function loadData(force=false){
   const grid=document.getElementById("grid");
-  grid.innerHTML="";
+
+  if(force){
+    grid.innerHTML='<div class="empty">Loading…</div>';
+  }
 
   try{
-    const res=await fetch("/.netlify/functions/notion");
+    const res=await fetch("/.netlify/functions/notion",{cache:"no-store"});
     const data=await res.json();
+
+    grid.innerHTML="";
 
     if(!data || !data.length){
       grid.innerHTML='<div class="empty">No Content</div>';
@@ -150,23 +175,25 @@ async function loadData(){
     }
 
     data.slice(0,12).forEach(item=>{
-      if(!item.url) return;
+      // 🔒 SAFE FALLBACK (ITO LANG ANG DINAGDAG)
+      const media = item.media || (item.url ? [{type:"image",url:item.url}] : []);
+      if(!media.length) return;
 
       const div=document.createElement("div");
       div.className="item";
 
       const img=document.createElement("img");
-      img.src=item.url;
-      img.onclick=()=>openImage(item.url);
+      img.src=media[0].url;
+      img.onclick=()=>openImage(media[0].url);
       div.appendChild(img);
 
-      if(item.title?.includes("(2)") || item.title?.includes("(3)")){
+      if(media.length > 1){
         const b=document.createElement("div");
         b.className="badge carousel";
         div.appendChild(b);
       }
 
-      if(item.title?.toLowerCase().includes("video")){
+      if(media[0].type === "video"){
         const b=document.createElement("div");
         b.className="badge video";
         div.appendChild(b);
@@ -175,8 +202,8 @@ async function loadData(){
       const overlay=document.createElement("div");
       overlay.className="overlay";
       overlay.innerHTML=`<div>${item.title||""}</div><div>${item.date||""}</div>`;
-
       div.appendChild(overlay);
+
       grid.appendChild(div);
     });
 
