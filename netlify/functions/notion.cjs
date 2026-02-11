@@ -14,32 +14,18 @@ exports.handler = async () => {
     });
 
     const data = response.results.map(page => {
-      const files = page.properties["Files & media"]?.files || [];
+  const files = page.properties["Files & media"]?.files || [];
 
-      return {
-        title: page.properties.Name?.title?.[0]?.plain_text || "",
-        url: files.length > 0
-          ? (files[0].type === "external"
-              ? files[0].external.url
-              : files[0].file.url)
-          : "",
-        date: page.properties["Publish Date"]?.date?.start || "",
-      };
-    });
+  const media = files.map(file =>
+    file.type === "external"
+      ? { url: file.external.url }
+      : { url: file.file.url }
+  );
 
-    return {
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    };
-
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
-    };
-  }
-};
+  return {
+    title: page.properties.Name?.title?.[0]?.plain_text || "",
+    media: media, // ← ITO ANG IMPORTANT
+    url: media.length ? media[0].url : "",
+    date: page.properties["Publish Date"]?.date?.start || "",
+  };
+});
