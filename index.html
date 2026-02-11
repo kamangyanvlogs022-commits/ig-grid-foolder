@@ -261,8 +261,7 @@ function open(arr){
 }
 
 function show(){
-  document.getElementById("media").innerHTML=
-    <img src="${images[index].url}">;
+ document.getElementById("media").innerHTML=`<img src="${images[index].url}">`;
 }
 function next(){if(index<images.length-1){index++;show();}}
 function prev(){if(index>0){index--;show();}}
