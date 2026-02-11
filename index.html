@@ -38,8 +38,8 @@ body{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:2px;
-  max-width:360px;
-  margin:0 auto;
+  max-width:360px;      /* iframe-safe */
+  margin:0 auto;        /* no tapyas */
 }
 .item{
   position:relative;
@@ -54,7 +54,7 @@ body{
   display:block;
 }
 
-/* ===== CAROUSEL BADGE (SMALL IG STYLE) ===== */
+/* ===== CAROUSEL BADGE (FINAL – SMALL IG STYLE) ===== */
 .badge.carousel{
   position:absolute;
   top:6px;
@@ -63,17 +63,21 @@ body{
   height:10px;
   background:#fff;
   border-radius:2px;
+  z-index:2;
 }
+
+/* manipis na shadow strip lang sa likod (may GAP) */
 .badge.carousel::after{
   content:"";
   position:absolute;
-  top:1px;
-  right:-2px;
-  width:10px;
+  top:2px;          /* maliit na gap */
+  right:-3px;       /* nakausli lang */
+  width:8px;        /* mas makitid */
   height:10px;
   background:#fff;
   border-radius:2px;
-  opacity:.9;
+  opacity:.7;
+  z-index:-1;
 }
 
 /* ===== OVERLAY ===== */
@@ -204,18 +208,24 @@ async function loadData(){
     }
 
     data.slice(0,12).forEach(item=>{
-      if(!item.url) return;
+      const media = item.media && item.media.length
+        ? item.media
+        : item.url
+          ? [{ url:item.url }]
+          : [];
+
+      if(!media.length) return;
 
       const div=document.createElement("div");
       div.className="item";
 
       const img=document.createElement("img");
-      img.src=item.url;
-      img.onclick=()=>open([item.url]);
+      img.src=media[0].url;
+      img.onclick=()=>open(media);
       div.appendChild(img);
 
-      /* OLD WORKING LOGIC — untouched */
-      if(item.title && item.title.match(/\((2|3|4|5)\)/)){
+      /* ✅ CAROUSEL BADGE — BASED SA ACTUAL MEDIA COUNT */
+      if(media.length > 1){
         const badge=document.createElement("div");
         badge.className="badge carousel";
         div.appendChild(badge);
@@ -243,7 +253,7 @@ function open(arr){
   const left=document.getElementById("navLeft");
   const right=document.getElementById("navRight");
 
-  if(images.length>1){
+  if(images.length > 1){
     left.style.display="flex";
     right.style.display="flex";
   }else{
@@ -255,7 +265,7 @@ function open(arr){
 }
 
 function show(){
-  document.getElementById("media").innerHTML=`<img src="${images[index]}">`;
+  document.getElementById("media").innerHTML=`<img src="${images[index].url}">`;
 }
 function next(){if(index<images.length-1){index++;show();}}
 function prev(){if(index>0){index--;show();}}
