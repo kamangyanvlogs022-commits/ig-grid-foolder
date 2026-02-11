@@ -30,26 +30,16 @@ body{
   transition:transform .15s ease;
 }
 .refresh-btn:hover{transform:translateY(-2px)}
-.refresh-icon{
-  width:14px;
-  height:14px;
-  stroke:#fff;
-  stroke-width:1.4;
-  fill:none;
-}
-.divider{
-  height:1px;
-  background:#e5e5e5;
-  margin-top:8px;
-}
+.refresh-icon{width:14px;height:14px;stroke:#fff;stroke-width:1.4;fill:none}
+.divider{height:1px;background:#e5e5e5;margin-top:8px}
 
-/* ===== GRID (OLD PERFECT RULES) ===== */
+/* ===== GRID ===== */
 .grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:2px;
-  max-width:360px;   /* ✅ NOT width */
-  margin:0 auto;     /* ✅ NOT margin:10px auto */
+  max-width:360px;      /* ✔ iframe-safe */
+  margin:0 auto;        /* ✔ no tapyas */
 }
 .item{
   position:relative;
@@ -64,7 +54,7 @@ body{
   display:block;
 }
 
-/* ===== CAROUSEL BADGE (IG STYLE) ===== */
+/* ===== CAROUSEL BADGE ===== */
 .badge.carousel{
   position:absolute;
   top:6px;
@@ -112,7 +102,6 @@ body{
   z-index:10;
 }
 .preview.active{display:flex}
-
 .preview-box{
   position:relative;
   width:220px;
@@ -137,7 +126,7 @@ body{
 .nav.left{left:6px}
 .nav.right{right:6px}
 
-/* ===== CLOSE (bouncy, same icon) ===== */
+/* ===== CLOSE ===== */
 .close{
   position:absolute;
   top:-32px;
@@ -180,7 +169,7 @@ body{
 </div>
 
 <script>
-let currentMedia=[], currentIndex=0;
+let images=[], index=0;
 
 async function loadData(){
   const grid=document.getElementById("grid");
@@ -196,26 +185,18 @@ async function loadData(){
     }
 
     data.slice(0,12).forEach(item=>{
-      const media =
-        Array.isArray(item.media) && item.media.length
-          ? item.media.map(m =>
-              typeof m==="string" ? {url:m} : m
-            )
-          : item.url
-            ? [{url:item.url}]
-            : null;
-
-      if(!media) return;
+      if(!item.url) return;   // ✔ OLD working logic
 
       const div=document.createElement("div");
       div.className="item";
 
       const img=document.createElement("img");
-      img.src=media[0].url;
-      img.onclick=()=>openPreview(media);
+      img.src=item.url;
+      img.onclick=()=>open([item.url]);
       div.appendChild(img);
 
-      if(media.length>1){
+      /* carousel badge based on title count (OLD logic) */
+      if(item.title && item.title.match(/\((2|3|4|5)\)/)){
         const badge=document.createElement("div");
         badge.className="badge carousel";
         div.appendChild(badge);
@@ -235,28 +216,17 @@ async function loadData(){
   }
 }
 
-function openPreview(media){
-  currentMedia=media;
-  currentIndex=0;
-  showMedia();
+function open(arr){
+  images=arr;
+  index=0;
+  show();
   document.getElementById("preview").classList.add("active");
 }
-function showMedia(){
-  document.getElementById("media").innerHTML=
-    <img src="${currentMedia[currentIndex].url}">;
+function show(){
+  document.getElementById("media").innerHTML=`<img src="${images[index]}">`;
 }
-function next(){
-  if(currentIndex<currentMedia.length-1){
-    currentIndex++;
-    showMedia();
-  }
-}
-function prev(){
-  if(currentIndex>0){
-    currentIndex--;
-    showMedia();
-  }
-}
+function next(){if(index<images.length-1){index++;show();}}
+function prev(){if(index>0){index--;show();}}
 function closePreview(){
   document.getElementById("preview").classList.remove("active");
   document.getElementById("media").innerHTML="";
