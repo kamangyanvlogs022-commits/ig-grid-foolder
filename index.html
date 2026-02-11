@@ -10,11 +10,13 @@
 body{
   background:#fff;
   font-family:Arial,sans-serif;
-  overflow-x:hidden; /* kill horizontal scroll */
 }
 
 /* ===== REFRESH ===== */
-.refresh-wrap{width:360px;margin:12px auto 6px}
+.refresh-wrap{
+  max-width:360px;
+  margin:12px auto 6px;
+}
 .refresh-btn{
   display:inline-flex;
   align-items:center;
@@ -25,17 +27,31 @@ body{
   border-radius:6px;
   font-size:12px;
   cursor:pointer;
+  transition:transform .15s ease;
 }
-.refresh-icon{width:14px;height:14px;stroke:#fff;stroke-width:1.4;fill:none}
-.divider{height:1px;background:#e5e5e5;margin-top:8px}
+.refresh-btn:hover{
+  transform:translateY(-2px);
+}
+.refresh-icon{
+  width:14px;
+  height:14px;
+  stroke:#fff;
+  stroke-width:1.4;
+  fill:none;
+}
+.divider{
+  height:1px;
+  background:#e5e5e5;
+  margin-top:8px;
+}
 
 /* ===== GRID ===== */
 .grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:2px;
-  width:360px;
-  margin:10px auto;
+  max-width:360px;   /* 🔑 NOT width */
+  margin:0 auto;
 }
 .item{
   position:relative;
@@ -47,17 +63,18 @@ body{
   width:100%;
   height:100%;
   object-fit:cover;
+  display:block;
 }
 
-/* ===== CAROUSEL BADGE (IG STYLE – FINAL) ===== */
+/* ===== CAROUSEL BADGE (IG-STYLE – FINAL) ===== */
 .badge.carousel{
   position:absolute;
   top:6px;
   right:6px;
-  width:14px;
-  height:14px;
+  width:12px;
+  height:12px;
   background:#fff;
-  border-radius:4px;
+  border-radius:3px;
   box-shadow:3px 0 0 rgba(255,255,255,.9);
 }
 
@@ -123,7 +140,7 @@ body{
 .nav.left{left:6px}
 .nav.right{right:6px}
 
-/* ===== CLOSE BUTTON (same icon, bouncy hover) ===== */
+/* ===== CLOSE BUTTON (same icon, bouncy) ===== */
 .close{
   position:absolute;
   top:-32px;
@@ -168,7 +185,7 @@ body{
 </div>
 
 <script>
-let images=[], index=0;
+let currentMedia=[], currentIndex=0;
 
 async function loadData(){
   const grid=document.getElementById("grid");
@@ -184,18 +201,18 @@ async function loadData(){
     }
 
     data.slice(0,12).forEach(item=>{
-      if(!item.url) return;
+      if(!item.media || !item.media.length) return;
 
       const div=document.createElement("div");
       div.className="item";
 
       const img=document.createElement("img");
-      img.src=item.url;
-      img.onclick=()=>open([item.url]);
+      img.src=item.media[0].url;
+      img.onclick=()=>openPreview(item.media);
       div.appendChild(img);
 
-      /* CAROUSEL BADGE: lalabas LANG kung 2+ images */
-      if(item.title && item.title.match(/\((2|3|4|5)\)/)){
+      /* ✅ CAROUSEL BADGE – REAL 2+ CHECK */
+      if(item.media.length > 1){
         const badge=document.createElement("div");
         badge.className="badge carousel";
         div.appendChild(badge);
@@ -215,20 +232,21 @@ async function loadData(){
   }
 }
 
-function open(arr){
-  images=arr;
-  index=0;
-  show();
+function openPreview(media){
+  currentMedia=media;
+  currentIndex=0;
+  showMedia();
   document.getElementById("preview").classList.add("active");
 }
-
-function show(){
-  document.getElementById("media").innerHTML=`<img src="${images[index]}">`;
+function showMedia(){
+  document.getElementById("media").innerHTML=`<img src="${currentMedia[currentIndex].url}">`;
 }
-
-function next(){ if(index<images.length-1){ index++; show(); } }
-function prev(){ if(index>0){ index--; show(); } }
-
+function next(){
+  if(currentIndex<currentMedia.length-1){currentIndex++;showMedia();}
+}
+function prev(){
+  if(currentIndex>0){currentIndex--;showMedia();}
+}
 function closePreview(){
   document.getElementById("preview").classList.remove("active");
   document.getElementById("media").innerHTML="";
