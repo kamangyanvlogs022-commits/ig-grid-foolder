@@ -30,16 +30,26 @@ body{
   transition:transform .15s ease;
 }
 .refresh-btn:hover{transform:translateY(-2px)}
-.refresh-icon{width:14px;height:14px;stroke:#fff;stroke-width:1.4;fill:none}
-.divider{height:1px;background:#e5e5e5;margin-top:8px}
+.refresh-icon{
+  width:14px;
+  height:14px;
+  stroke:#fff;
+  stroke-width:1.4;
+  fill:none;
+}
+.divider{
+  height:1px;
+  background:#e5e5e5;
+  margin-top:8px;
+}
 
-/* ===== GRID ===== */
+/* ===== GRID (OLD PERFECT RULES) ===== */
 .grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:2px;
-  max-width:360px;
-  margin:0 auto;
+  max-width:360px;   /* ✅ NOT width */
+  margin:0 auto;     /* ✅ NOT margin:10px auto */
 }
 .item{
   position:relative;
@@ -54,7 +64,7 @@ body{
   display:block;
 }
 
-/* ===== CAROUSEL BADGE ===== */
+/* ===== CAROUSEL BADGE (IG STYLE) ===== */
 .badge.carousel{
   position:absolute;
   top:6px;
@@ -102,6 +112,7 @@ body{
   z-index:10;
 }
 .preview.active{display:flex}
+
 .preview-box{
   position:relative;
   width:220px;
@@ -126,7 +137,7 @@ body{
 .nav.left{left:6px}
 .nav.right{right:6px}
 
-/* ===== CLOSE ===== */
+/* ===== CLOSE (bouncy, same icon) ===== */
 .close{
   position:absolute;
   top:-32px;
@@ -185,11 +196,14 @@ async function loadData(){
     }
 
     data.slice(0,12).forEach(item=>{
-      const media = item.media && item.media.length
-        ? item.media
-        : item.url
-          ? [{url:item.url}]
-          : null;
+      const media =
+        Array.isArray(item.media) && item.media.length
+          ? item.media.map(m =>
+              typeof m==="string" ? {url:m} : m
+            )
+          : item.url
+            ? [{url:item.url}]
+            : null;
 
       if(!media) return;
 
@@ -231,8 +245,18 @@ function showMedia(){
   document.getElementById("media").innerHTML=
     <img src="${currentMedia[currentIndex].url}">;
 }
-function next(){if(currentIndex<currentMedia.length-1){currentIndex++;showMedia();}}
-function prev(){if(currentIndex>0){currentIndex--;showMedia();}}
+function next(){
+  if(currentIndex<currentMedia.length-1){
+    currentIndex++;
+    showMedia();
+  }
+}
+function prev(){
+  if(currentIndex>0){
+    currentIndex--;
+    showMedia();
+  }
+}
 function closePreview(){
   document.getElementById("preview").classList.remove("active");
   document.getElementById("media").innerHTML="";
