@@ -38,8 +38,8 @@ body{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:2px;
-  max-width:360px;      /* ✔ iframe-safe */
-  margin:0 auto;        /* ✔ no tapyas */
+  max-width:360px;
+  margin:0 auto;
 }
 .item{
   position:relative;
@@ -54,16 +54,26 @@ body{
   display:block;
 }
 
-/* ===== CAROUSEL BADGE ===== */
+/* ===== CAROUSEL BADGE (SMALL IG STYLE) ===== */
 .badge.carousel{
   position:absolute;
   top:6px;
   right:6px;
-  width:12px;
-  height:12px;
+  width:10px;
+  height:10px;
   background:#fff;
-  border-radius:3px;
-  box-shadow:3px 0 0 rgba(255,255,255,.9);
+  border-radius:2px;
+}
+.badge.carousel::after{
+  content:"";
+  position:absolute;
+  top:1px;
+  right:-2px;
+  width:10px;
+  height:10px;
+  background:#fff;
+  border-radius:2px;
+  opacity:.9;
 }
 
 /* ===== OVERLAY ===== */
@@ -102,6 +112,7 @@ body{
   z-index:10;
 }
 .preview.active{display:flex}
+
 .preview-box{
   position:relative;
   width:220px;
@@ -113,15 +124,23 @@ body{
   object-fit:cover;
 }
 
-/* ===== NAV ===== */
+/* ===== NAV ARROWS ===== */
 .nav{
   position:absolute;
   top:50%;
   transform:translateY(-50%);
-  font-size:20px;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  background:rgba(0,0,0,.45);
   color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
   cursor:pointer;
-  padding:4px;
+  user-select:none;
+  display:none; /* default hidden */
 }
 .nav.left{left:6px}
 .nav.right{right:6px}
@@ -161,8 +180,8 @@ body{
 
 <div class="preview" id="preview">
   <div class="preview-box">
-    <span class="nav left" onclick="prev()">‹</span>
-    <span class="nav right" onclick="next()">›</span>
+    <span class="nav left" id="navLeft" onclick="prev()">‹</span>
+    <span class="nav right" id="navRight" onclick="next()">›</span>
     <button class="close" onclick="closePreview()">×</button>
     <div id="media"></div>
   </div>
@@ -185,7 +204,7 @@ async function loadData(){
     }
 
     data.slice(0,12).forEach(item=>{
-      if(!item.url) return;   // ✔ OLD working logic
+      if(!item.url) return;
 
       const div=document.createElement("div");
       div.className="item";
@@ -195,7 +214,7 @@ async function loadData(){
       img.onclick=()=>open([item.url]);
       div.appendChild(img);
 
-      /* carousel badge based on title count (OLD logic) */
+      /* OLD WORKING LOGIC — untouched */
       if(item.title && item.title.match(/\((2|3|4|5)\)/)){
         const badge=document.createElement("div");
         badge.className="badge carousel";
@@ -220,8 +239,21 @@ function open(arr){
   images=arr;
   index=0;
   show();
+
+  const left=document.getElementById("navLeft");
+  const right=document.getElementById("navRight");
+
+  if(images.length>1){
+    left.style.display="flex";
+    right.style.display="flex";
+  }else{
+    left.style.display="none";
+    right.style.display="none";
+  }
+
   document.getElementById("preview").classList.add("active");
 }
+
 function show(){
   document.getElementById("media").innerHTML=`<img src="${images[index]}">`;
 }
