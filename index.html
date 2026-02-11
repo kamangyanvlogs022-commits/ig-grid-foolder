@@ -205,11 +205,12 @@ async function loadData(){
     }
 
     data.slice(0,12).forEach(item=>{
-      const media = item.media && item.media.length
-        ? item.media
-        : item.url
-          ? [{ url:item.url }]
-          : [];
+    const media =
+  Array.isArray(item.media) && item.media.length ? item.media :
+  Array.isArray(item.files) && item.files.length ? item.files :
+  Array.isArray(item.images) && item.images.length ? item.images :
+  item.url ? [{ url: item.url }] :
+  [];
 
       if(!media.length) return;
 
