@@ -205,14 +205,24 @@ async function loadData(){
     }
 
     data.slice(0,12).forEach(item=>{
-    const media =
-  Array.isArray(item.media) && item.media.length ? item.media :
-  Array.isArray(item.files) && item.files.length ? item.files :
-  Array.isArray(item.images) && item.images.length ? item.images :
+   const rawMedia =
+  Array.isArray(item.media) ? item.media :
+  Array.isArray(item.files) ? item.files :
+  Array.isArray(item.images) ? item.images :
   item.url ? [{ url: item.url }] :
   [];
 
-      if(!media.length) return;
+/* NORMALIZE to { url } */
+const media = rawMedia
+  .map(m => {
+    if (m.url) return { url: m.url };
+    if (m.file && m.file.url) return { url: m.file.url };
+    if (m.external && m.external.url) return { url: m.external.url };
+    return null;
+  })
+  .filter(Boolean);
+
+if (!media.length) return;
 
       const div=document.createElement("div");
       div.className="item";
