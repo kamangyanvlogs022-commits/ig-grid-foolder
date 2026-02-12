@@ -61,21 +61,23 @@ body{
   right:6px;
   width:12px;
   height:12px;
-  background:#fff;
-  border-radius:2px;   /* hindi super round */
+  background:#f6f3ea; /* beige white */
+  border-radius:2px;
   z-index:2;
 }
 
-/* second card */
+/* ilalim lang (_| shape) */
 .badge.carousel::after{
   content:"";
   position:absolute;
-  top:-2px;            /* maliit lang gap */
-  right:-2px;
-  width:12px;
+  top:3px;      /* maliit lang gap pababa */
+  left:3px;     /* maliit lang gap pakanan */
+  width:12px;   /* mas makitid ng konti */
   height:12px;
-  background:#fff;
-  border-radius:2px;   /* same radius */
+  border-right:2px solid #f6f3ea;
+  border-bottom:2px solid #f6f3ea;
+  border-radius:4px;
+  background:transparent;
   z-index:-1;
 }
 
@@ -131,49 +133,38 @@ body{
   position:absolute;
   top:50%;
   transform:translateY(-50%);
-  width:36px;
-  height:36px;
+  width:24px;
+  height:24px;
   border-radius:50%;
-  background:rgba(0,0,0,.45);
-  color:#fff;
+  background:rgba(255,248,235,0.85);
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:18px;
-  cursor:pointer;
-  user-select:none;
-  transition:all .2s ease;
-}
-.nav{
-  position:absolute;
-  top:50%;
-  transform:translateY(-50%);
-  width:36px;                 /* mas malaki = mas madaling pindutin */
-  height:36px;
-  border-radius:50%;
-  background:rgba(0,0,0,.45);
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:18px;
+  font-size:14px;
+  font-weight:600;
+  color:rgba(0,0,0,0.6);
   cursor:pointer;
   user-select:none;
   opacity:0;
-  transition:all .2s ease;    /* smooth */
+  transition:opacity .2s ease, transform .08s ease;
 }
 
 .preview-box:hover .nav{
-  opacity:1;                  /* lalabas lang pag hover */
+  opacity:1;
 }
 
+/* subtle hover lift */
 .nav:hover{
-  transform:translateY(-50%) scale(1.12);  /* bounce effect */
-  background:rgba(0,0,0,.65);
+  transform:translateY(-50%) translateY(-1px);
 }
 
-.nav.left{left:8px}
-.nav.right{right:8px}
+/* subtle press down */
+.nav:active{
+  transform:translateY(-50%) translateY(1px);
+}
+
+.nav.left{left:6px}
+.nav.right{right:6px}
 
 /* ===== CLOSE ===== */
 .close{
@@ -194,7 +185,15 @@ body{
 <body>
 
 <div class="refresh-wrap">
-  <div class="refresh-btn" onclick="loadData()">Refresh</div>
+  <div class="refresh-btn" onclick="loadData()">
+    <svg viewBox="0 0 24 24" class="refresh-icon">
+      <path d="M4 12a8 8 0 0 1 13-6"/>
+      <polyline points="17 2 17 6 13 6"/>
+      <path d="M20 12a8 8 0 0 1-13 6"/>
+      <polyline points="7 22 7 18 11 18"/>
+    </svg>
+    Refresh
+  </div>
   <div class="divider"></div>
 </div>
 
