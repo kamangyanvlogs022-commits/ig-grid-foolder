@@ -17,13 +17,26 @@ exports.handler = async function () {
       const files = page.properties["Files & media"]?.files || [];
 
       const media = files.map(f => {
+        let url = null;
+
         if (f.type === "external") {
-          return { url: f.external.url };
+          url = f.external.url;
         }
+
         if (f.type === "file") {
-          return { url: f.file.url };
+          url = f.file.url;
         }
-        return null;
+
+        if (!url) return null;
+
+        // 🔥 VIDEO DETECTION (dagdag lang ito)
+        const isVideo = url.match(/\.(mp4|mov|webm|ogg)$/i);
+
+        return {
+          url: url,
+          type: isVideo ? "video" : "image"
+        };
+
       }).filter(Boolean);
 
       return {
