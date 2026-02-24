@@ -65,7 +65,7 @@ body{
   border-radius:2px;
   z-index:2;
 
-transform: translateX(-3px) scale(0.85);
+transform: translateX(-3px) scale(0.83);
   transform-origin: top right
 }
 
@@ -82,6 +82,33 @@ transform: translateX(-3px) scale(0.85);
   border-radius:4px;
   background:transparent;
   z-index:-1;
+}
+
+/* ===== VIDEO BADGE ===== */
+.badge.video{
+  position:absolute;
+  top:4px;
+  right:4px;
+  width:13px;
+  height:13px;
+  background:#f6f3ea;
+  border-radius:2px;
+  z-index:2;
+
+  transform: translateX(-3px) scale(0.83); /* same scale mo */
+  transform-origin: top right;
+}
+
+/* transparent play icon */
+.badge.video::after{
+  content:"";
+  position:absolute;
+  top:3px;
+  left:4px;
+  width:5px;
+  height:5px;
+  background:#000;
+  clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
 }
 
 /* ===== OVERLAY ===== */
@@ -261,6 +288,13 @@ async function loadData(){
         div.appendChild(badge);
       }
 
+// VIDEO BADGE
+if(media.length === 1 && media[0].type === "video"){
+  const badge=document.createElement("div");
+  badge.className="badge video";
+  div.appendChild(badge);
+}
+
       const overlay=document.createElement("div");
       overlay.className="overlay";
       overlay.innerHTML=`<div>${item.title||""}</div><div>${item.date||""}</div>`;
@@ -281,12 +315,61 @@ function open(arr){
   index=0;
   updateArrows();
   show();
+  enhanceVideoOverlay();  // 👈 DITO LANG
   document.getElementById("preview").classList.add("active");
 }
 
 function show(){
 
  document.getElementById("media").innerHTML=`<img src="${images[index].url}">`;
+}
+
+function enhanceVideoOverlay(){
+  const current = images[index];
+  if(!current.url.match(/\.(mp4|mov|webm|ogg)$/i)) return;
+
+  const mediaDiv = document.getElementById("media");
+
+  mediaDiv.style.position="relative";
+
+  const playOverlay = document.createElement("div");
+  playOverlay.style.position="absolute";
+  playOverlay.style.inset="0";
+  playOverlay.style.display="flex";
+  playOverlay.style.alignItems="center";
+  playOverlay.style.justifyContent="center";
+  playOverlay.style.cursor="pointer";
+
+  playOverlay.innerHTML = `
+    <div style="
+      width:46px;
+      height:46px;
+      border-radius:50%;
+      background:rgba(255,248,235,0.9);
+      display:flex;
+      align-items:center;
+      justify-content:center;">
+        <div style="
+          width:0;
+          height:0;
+          border-left:14px solid #000;
+          border-top:8px solid transparent;
+          border-bottom:8px solid transparent;
+        "></div>
+    </div>
+  `;
+
+  playOverlay.onclick = function(){
+    mediaDiv.innerHTML = `
+      <video src="${current.url}"
+             controls
+             playsinline
+             style="width:100%;height:100%;object-fit:cover;">
+      </video>
+    `;
+  };
+
+  mediaDiv.appendChild(playOverlay);
 }
 function next(){
   if(index < images.length-1){
