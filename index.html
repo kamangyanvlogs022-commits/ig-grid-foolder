@@ -61,15 +61,13 @@ body{
   right:4px;
   width:13px;
   height:13px;
-  background:#f6f3ea; /* beige white */
+  background:#f6f3ea;
   border-radius:2px;
   z-index:2;
-
 transform: translateX(-3px) scale(0.83);
   transform-origin: top right
 }
 
-/* ilalim lang (_| shape) */
 .badge.carousel::after{
   content:"";
   position:absolute;
@@ -94,12 +92,10 @@ transform: translateX(-3px) scale(0.83);
   background:#f6f3ea;
   border-radius:2px;
   z-index:2;
-
-  transform: translateX(-3px) scale(0.83); /* same scale mo */
+  transform: translateX(-3px) scale(0.83);
   transform-origin: top right;
 }
 
-/* transparent play icon */
 .badge.video::after{
   content:"";
   position:absolute;
@@ -158,7 +154,7 @@ transform: translateX(-3px) scale(0.83);
   object-fit:cover;
 }
 
-/* ===== NAV ARROWS (FIXED + SMOOTH) ===== */
+/* ===== NAV ARROWS ===== */
 .nav{
   position:absolute;
   top:50%;
@@ -179,20 +175,9 @@ transform: translateX(-3px) scale(0.83);
   transition:opacity .2s ease, transform .08s ease;
 }
 
-.preview-box:hover .nav{
-  opacity:1;
-}
-
-/* subtle hover lift */
-.nav:hover{
-  transform:translateY(-50%) translateY(-1px);
-}
-
-/* subtle press down */
-.nav:active{
-  transform:translateY(-50%) translateY(1px);
-}
-
+.preview-box:hover .nav{opacity:1}
+.nav:hover{transform:translateY(-50%) translateY(-1px)}
+.nav:active{transform:translateY(-50%) translateY(1px)}
 .nav.left{left:6px}
 .nav.right{right:6px}
 
@@ -265,7 +250,7 @@ async function loadData(){
 
       const media = rawMedia
         .map(m=>{
-          if(m?.url) return { url:m.url };
+          if(m?.url) return m;  
           if(m?.file?.url) return { url:m.file.url };
           if(m?.external?.url) return { url:m.external.url };
           return null;
@@ -278,22 +263,22 @@ async function loadData(){
       div.className="item";
 
       if(media[0].type === "video"){
-  const video=document.createElement("video");
-  video.src=media[0].url;
-  video.muted=true;
-  video.playsInline=true;
-  video.preload="metadata";
-  video.style.width="100%";
-  video.style.height="100%";
-  video.style.objectFit="cover";
-  video.onclick=()=>open(media);
-  div.appendChild(video);
-}else{
-  const img=document.createElement("img");
-  img.src=media[0].url;
-  img.onclick=()=>open(media);
-  div.appendChild(img);
-}
+        const video=document.createElement("video");
+        video.src=media[0].url;
+        video.muted=true;
+        video.playsInline=true;
+        video.preload="metadata";
+        video.style.width="100%";
+        video.style.height="100%";
+        video.style.objectFit="cover";
+        video.onclick=()=>open(media);
+        div.appendChild(video);
+      }else{
+        const img=document.createElement("img");
+        img.src=media[0].url;
+        img.onclick=()=>open(media);
+        div.appendChild(img);
+      }
 
       if(media.length > 1){
         const badge=document.createElement("div");
@@ -301,12 +286,11 @@ async function loadData(){
         div.appendChild(badge);
       }
 
-// VIDEO BADGE
-if(media.length === 1 && media[0].type === "video"){
-  const badge=document.createElement("div");
-  badge.className="badge video";
-  div.appendChild(badge);
-}
+      if(media.length === 1 && media[0].type === "video"){
+        const badge=document.createElement("div");
+        badge.className="badge video";
+        div.appendChild(badge);
+      }
 
       const overlay=document.createElement("div");
       overlay.className="overlay";
@@ -322,68 +306,31 @@ if(media.length === 1 && media[0].type === "video"){
   }
 }
 
-/* PREVIEW LOGIC */
 function open(arr){
   images=arr;
   index=0;
   updateArrows();
   show();
-  enhanceVideoOverlay();  // 👈 DITO LANG
   document.getElementById("preview").classList.add("active");
 }
 
 function show(){
-
- document.getElementById("media").innerHTML=`<img src="${images[index].url}">`;
-}
-
-function enhanceVideoOverlay(){
   const current = images[index];
-  if(!current.url.match(/\.(mp4|mov|webm|ogg)$/i)) return;
-
   const mediaDiv = document.getElementById("media");
 
-  mediaDiv.style.position="relative";
+  const isVideo = current.url.match(/\.(mp4|mov|webm|ogg)$/i);
 
-  const playOverlay = document.createElement("div");
-  playOverlay.style.position="absolute";
-  playOverlay.style.inset="0";
-  playOverlay.style.display="flex";
-  playOverlay.style.alignItems="center";
-  playOverlay.style.justifyContent="center";
-  playOverlay.style.cursor="pointer";
-
-  playOverlay.innerHTML = `
-    <div style="
-      width:46px;
-      height:46px;
-      border-radius:50%;
-      background:rgba(255,248,235,0.9);
-      display:flex;
-      align-items:center;
-      justify-content:center;">
-        <div style="
-          width:0;
-          height:0;
-          border-left:14px solid #000;
-          border-top:8px solid transparent;
-          border-bottom:8px solid transparent;
-        "></div>
-    </div>
-  `;
-
-  playOverlay.onclick = function(){
+  if(isVideo){
     mediaDiv.innerHTML = `
-      <video src="${current.url}"
-             controls
-             playsinline
-             style="width:100%;height:100%;object-fit:cover;">
+      <video controls playsinline style="width:100%;height:100%;object-fit:cover;">
+        <source src="${current.url}">
       </video>
     `;
-  };
-
-  mediaDiv.appendChild(playOverlay);
+  } else {
+   mediaDiv.innerHTML = <img src="${current.url}">;
+  }
 }
+
 function next(){
   if(index < images.length-1){
     index++;
