@@ -89,12 +89,16 @@ transform: translateX(-3px) scale(0.83);
   right:4px;
   width:13px;
   height:13px;
-  background:rgba(255,255,255,0.95);
-  border-radius:2px;
+  background:#f6f3ea;
+  border-radius:3px;
+  z-index:2;
+
+  transform: translateX(-3px) scale(0.83);
+  transform-origin: top right;
+
   display:flex;
   align-items:center;
   justify-content:center;
-  z-index:3;
 }
 
 /* ===== OVERLAY ===== */
@@ -283,7 +287,7 @@ if(isVideo){
 badge.className = "badge video";
 
 badge.innerHTML = `
-<svg viewBox="0 0 24 24" width="8" height="8">
+<svg viewBox="0 0 24 24" width="10" height="10">
   <path d="
     M9 7
     Q9 6.8 9.8 7.5
