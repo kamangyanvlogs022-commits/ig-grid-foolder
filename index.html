@@ -92,10 +92,6 @@ transform: translateX(-3px) scale(0.83);
   background:#f6f3ea;
   border-radius:3px;
   z-index:2;
-
-  transform: translateX(-3px) scale(0.83);
-  transform-origin: top right;
-
   display:flex;
   align-items:center;
   justify-content:center;
@@ -287,19 +283,11 @@ if(isVideo){
 badge.className = "badge video";
 
 badge.innerHTML = `
-<svg viewBox="0 0 24 24" width="10" height="10">
-  <path d="
-    M9 7
-    Q9 6.8 9.8 7.5
-    L15 12
-    Q15.5 12 15 12.5
-    L9.8 16.5
-    Q9 17.2 9 17
-    Z"
-    fill="rgba(0,0,0,0.85)" />
+<svg viewBox="0 0 24 24" width="9" height="9">
+  <path d="M9 7 Q8.8 8 9.8 9 L15 12 L9.8 15 Q8.8 16 9 17 Z"
+        fill="rgba(0,0,0,0.6)" />
 </svg>
 `;
-
 div.appendChild(badge);
 }
 
